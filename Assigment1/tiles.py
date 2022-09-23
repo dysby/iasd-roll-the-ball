@@ -18,21 +18,29 @@ class InitialTypeTile(Tile):
 class InitialLeft(InitialTypeTile):
     def follow(self, loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
         return ((loc[0], loc[1] - 1), Flow.RIGHT)
+    def __str__(self):
+        return "initial-left"
 
 
 class InitialRight(InitialTypeTile):
     def follow(self, loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
         return ((loc[0], loc[1] + 1), Flow.LEFT)
+    def __str__(self):
+        return "initial-right"
 
 
 class InitialTop(Tile):
     def follow(self, loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
         return ((loc[0] + 1, loc[1] ), Flow.DOWN)
+    def __str__(self):
+        return "initial-top"
 
 
 class InitialDown(Tile):
     def follow(self, loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
         return ((loc[0] - 1, loc[1] ), Flow.TOP)
+    def __str__(self):
+        return "initial-down"
 
 
 class GoalLeft(Tile):
@@ -40,6 +48,8 @@ class GoalLeft(Tile):
         if flow == Flow.LEFT:
             return (loc, flow)
         return (loc, Flow.ERROR)
+    def __str__(self):
+        return "goal-left"
 
 
 class GoalRight(Tile):
@@ -47,6 +57,8 @@ class GoalRight(Tile):
         if flow == Flow.RIGHT:
             return (loc, flow)
         return (loc, Flow.ERROR)
+    def __str__(self):
+        return "goal-right"
 
 
 class GoalTop(Tile):
@@ -54,6 +66,8 @@ class GoalTop(Tile):
         if flow == Flow.TOP:
             return (loc, flow)
         return (loc, Flow.ERROR)
+    def __str__(self):
+        return "goal-top"
 
 
 class GoalDown(Tile):
@@ -61,6 +75,8 @@ class GoalDown(Tile):
         if flow == Flow.DOWN:
             return (loc, flow)
         return (loc, Flow.ERROR)
+    def __str__(self):
+        return "goal-down"
 
 
 class RightLeft(Tile):
@@ -71,6 +87,8 @@ class RightLeft(Tile):
             return ((loc[0], loc[1] - 1), Flow.RIGHT)
         else:
             return (loc, Flow.ERROR)
+    def __str__(self):
+        return "right-left"
 
 
 class TopDown(Tile):
@@ -81,6 +99,8 @@ class TopDown(Tile):
             return ((loc[0] + 1, loc[1] + 1), Flow.DOWN)
         else:
             return (loc, Flow.ERROR)
+    def __str__(self):
+        return "top-down"
 
 
 class RightTop(Tile):
@@ -91,6 +111,8 @@ class RightTop(Tile):
             return ((loc[0], loc[1] + 1), Flow.LEFT)
         else:
             return (loc, Flow.ERROR)
+    def __str__(self):
+        return "right-top"
 
 
 class RightDown(Tile):
@@ -101,6 +123,8 @@ class RightDown(Tile):
             return ((loc[0], loc[1] + 1), Flow.LEFT)
         else:
             return (loc, Flow.ERROR)
+    def __str__(self):
+        return "right-down"
 
 
 class LeftTop(Tile):
@@ -112,6 +136,8 @@ class LeftTop(Tile):
         else:
             return (loc, Flow.ERROR)
 
+    def __str__(self):
+        return "left-top"
 class LeftDown(Tile):
     def follow(self, loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
         if flow == Flow.LEFT:
@@ -121,35 +147,48 @@ class LeftDown(Tile):
         else:
             return (loc, Flow.ERROR)
 
+    def __str__(self):
+        return "left-down"
+
 class NoPassage(Tile):
-    pass
+    def __str__(self):
+        return "no-passage"
 
 class Empty(Tile):
-    pass
+    def __str__(self):
+        return "empty-cell"
 
 class RightLeftNot(RightLeft):
-    pass
+    def __str__(self):
+        return "right-left-not"
 
 class TopDownNot(TopDown):
-    pass
+    def __str__(self):
+        return "top-down-not"
 
 class RightTopNot(RightTop):
-    pass
+    def __str__(self):
+        return "right-top-not"
 
 
 class RightDownNot(RightDown):
-    pass
+    def __str__(self):
+        return "right-down-not"
 
 class LeftTopNot(LeftTop):
-    pass
+    def __str__(self):
+        return "left-top-not"
 
 
 class LeftDownNot(LeftDown):
-    pass
+    def __str__(self):
+        return "left-down-not"
+    
 
 
 class NoPassageNot(NoPassage):
-    pass
+    def __str__(self):
+        return "no-passage-not"
 
 
 def tile_factory(name: str = "empty-cell") -> Tile:
