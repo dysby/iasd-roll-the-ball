@@ -5,34 +5,6 @@ from tiles import Tile, Empty, Flow, tile_factory
 from flow_rules import follow_func, flow_init
 
 
-def board_state(board: List[List[Tile]]) -> List[str]:
-    """
-    Read Board List of Lists (N x N) and save each Tile 'to string' method output
-    to a list. This state, as a list of strings, will be usefull for storage of
-    various enviornment state instances and verify if two state instances
-    correspond to the same enviornment state.
-    """
-    state = [str(tile) for row in board for tile in row]
-    print(state)
-    return state
-
-
-def state_board(state: List[str]) -> List[List[Tile]]:
-    """
-    Inverse operation of board_state method. Create a Board N x N with
-    'tile' object of correct class
-    """
-    N = int(len(state) ** (1 / 2))
-    board = [[Empty for _ in range(N)] for _ in range(N)]
-
-    # this loop will use mod calculous for accessing the
-    # right index of the grid
-    for i, tile_name in enumerate(state):
-        board[i // N][i % N] = tile_factory(tile_name)
-
-    return board
-
-
 class RTBProblem(search.Problem):
     def init(self):
         """
@@ -85,8 +57,16 @@ class RTBProblem(search.Problem):
                 board[current_loc[0] * self.N + current_loc[1]]
             ](current_loc, flow)
             print(flow, current_loc, board[current_loc[0] * self.N + current_loc[1]])
-            if flow == Flow.ERROR:
+
+            if (
+                flow == Flow.ERROR
+                or current_loc[0] < 0
+                or current_loc[0] >= self.N
+                or current_loc[1] < 0
+                or current_loc[1] >= self.N
+            ):
                 return 0
+
             if board[current_loc[0] * self.N + current_loc[1]] in (
                 "goal-top",
                 "goal-down",
