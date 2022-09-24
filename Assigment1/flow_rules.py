@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from .tiles import Flow
+from tiles import Flow
 
 
 def follow_initial_left(
@@ -133,4 +133,11 @@ follow_func = {
     "left-down": follow_left_down,
     "no-passage": follow_no_passage,
     "empty-cell": follow_no_passage,
+}
+
+flow_init = {
+    "initial-left": Flow.RIGHT,
+    "initial-right": Flow.LEFT,
+    "initial-top": Flow.DOWN,
+    "initial-down": Flow.TOP,
 }
