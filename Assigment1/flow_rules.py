@@ -1,6 +1,13 @@
 from typing import Tuple
+from enum import Enum, auto
 
-from tiles import Flow
+
+class Flow(Enum):
+    TOP = auto()
+    DOWN = auto()
+    RIGHT = auto()
+    LEFT = auto()
+    ERROR = auto()
 
 
 def follow_initial_left(
@@ -135,9 +142,9 @@ follow_func = {
     "empty-cell": follow_no_passage,
 }
 
-flow_init = {
-    "initial-left": Flow.RIGHT,
-    "initial-right": Flow.LEFT,
-    "initial-top": Flow.DOWN,
-    "initial-down": Flow.TOP,
-}
+# flow_init = {
+#     "initial-left": Flow.RIGHT,
+#     "initial-right": Flow.LEFT,
+#     "initial-top": Flow.DOWN,
+#     "initial-down": Flow.TOP,
+# }

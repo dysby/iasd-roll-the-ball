@@ -1,8 +1,5 @@
-from typing import List, TextIO
-
 import search
-from tiles import Tile, Empty, Flow, tile_factory
-from flow_rules import follow_func, flow_init
+from flow_rules import Flow, follow_func
 
 
 class RTBProblem(search.Problem):
@@ -10,12 +7,12 @@ class RTBProblem(search.Problem):
         """
         Method that instantiate your class. You can change the content of this. self.initial is where
         the initial state of the puzzle should be saved.
+        init initial state with empty tupple
         """
-        super().__init__(None)
+        super().__init__(())
         self.N = 0
-        # self.initial: List[List[Tile]] = [[]]
 
-    def load(self, fh: TextIO):
+    def load(self, fh):
         """Loads a RTB puzzle from the file object fh. You may initialize self.initial here."""
         board = []
 
@@ -28,17 +25,19 @@ class RTBProblem(search.Problem):
                 self.N = int(line)
             else:
                 # all other lines are, in sequence, corresponding to each board line configuration.
-                row = [tile for tile in line.split(" ")]
+                # row = [tile for tile in line.split(" ")]
+                row = [tile for tile in line.split()]
                 board += row
 
         self.initial = tuple(board)
 
     def isSolution(self):
         """returns 1 if the loaded puzzle is a solution, 0 otherwise."""
-        # Find initial tile from board
         board = self.initial
+        print(board)
 
         def _find_init():
+            # Locate the initial tile on the board, and set initial flow
             for idx, tile in enumerate(board):
                 if tile in (
                     "initial-left",
@@ -46,18 +45,20 @@ class RTBProblem(search.Problem):
                     "initial-top",
                     "initial-down",
                 ):
-                    return ((idx // self.N, idx % self.N), flow_init[tile])
+                    return (idx // self.N, idx % self.N)
             raise ValueError("did not find initial tile")
 
-        current_loc, flow = _find_init()
+        # initial position, flow is not defined, can be any value
+        current_loc, flow = _find_init(), Flow.DOWN
 
-        print(flow, current_loc, board[current_loc[0] * self.N + current_loc[1]])
+        print(current_loc, board[current_loc[0] * self.N + current_loc[1]])
         while True:
             current_loc, flow = follow_func[
                 board[current_loc[0] * self.N + current_loc[1]]
             ](current_loc, flow)
             print(flow, current_loc, board[current_loc[0] * self.N + current_loc[1]])
 
+            # tile is not compatible: broke the flow or flows outside
             if (
                 flow == Flow.ERROR
                 or current_loc[0] < 0
@@ -67,13 +68,23 @@ class RTBProblem(search.Problem):
             ):
                 return 0
 
+            # reached another initial tile, not solvable
+            if board[current_loc[0] * self.N + current_loc[1]] in (
+                "initial-left",
+                "initial-right",
+                "initial-top",
+                "initial-down",
+            ):
+                return 0
+
+            # found a goal tile, is it compatible?
             if board[current_loc[0] * self.N + current_loc[1]] in (
                 "goal-top",
                 "goal-down",
                 "goal-left",
                 "goal-right",
             ):
-                # final flow test to goal tile
+                # final flow test to check if goal tile is compatible
                 current_loc, flow = follow_func[
                     board[current_loc[0] * self.N + current_loc[1]]
                 ](current_loc, flow)
