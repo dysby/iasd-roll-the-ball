@@ -35,13 +35,13 @@ def follow_initial_right(
 def follow_initial_top(
     loc: Tuple[int, int], flow: Flow
 ) -> Tuple[Tuple[int, int], Flow]:
-    return ((loc[0] + 1, loc[1]), Flow.DOWN)
+    return ((loc[0] - 1, loc[1]), Flow.DOWN)
 
 
 def follow_initial_down(
     loc: Tuple[int, int], flow: Flow
 ) -> Tuple[Tuple[int, int], Flow]:
-    return ((loc[0] - 1, loc[1]), Flow.TOP)
+    return ((loc[0] + 1, loc[1]), Flow.TOP)
 
 
 def follow_goal_left(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
@@ -79,9 +79,9 @@ def follow_right_left(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int]
 
 def follow_top_down(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
     if flow == Flow.TOP:
-        return ((loc[0] - 1, loc[1]), Flow.TOP)
+        return ((loc[0] + 1, loc[1]), Flow.TOP)
     elif flow == Flow.DOWN:
-        return ((loc[0] + 1, loc[1] + 1), Flow.DOWN)
+        return ((loc[0] - 1, loc[1]), Flow.DOWN)
     else:
         return (loc, Flow.ERROR)
 
@@ -160,7 +160,8 @@ class RTBProblem(search.Problem):
         the initial state of the puzzle should be saved.
         init initial state with empty tupple
         """
-        self.initial = ()
+        super().__init__(())
+        # self.initial = ()
         self.N = 0
 
     def load(self, fh):
@@ -185,7 +186,7 @@ class RTBProblem(search.Problem):
     def isSolution(self):
         """returns 1 if the loaded puzzle is a solution, 0 otherwise."""
         board = self.initial
-        # print(board)
+        print(board)
 
         def _find_init():
             """Locate the initial tile on the board, and set initial flow."""
@@ -202,12 +203,12 @@ class RTBProblem(search.Problem):
         # initial position, flow is not defined, can be any value
         current_loc, flow = _find_init(), Flow.DOWN
 
-        # print(current_loc, board[current_loc[0] * self.N + current_loc[1]])
+        print(current_loc, board[current_loc[0] * self.N + current_loc[1]])
         while True:
             current_loc, flow = follow_func[
                 board[current_loc[0] * self.N + current_loc[1]]
             ](current_loc, flow)
-            # print(flow, current_loc, board[current_loc[0] * self.N + current_loc[1]])
+            print(flow, current_loc, board[current_loc[0] * self.N + current_loc[1]])
 
             # tile is not compatible: broke the flow or flows outside
             if (
