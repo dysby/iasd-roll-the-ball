@@ -5,7 +5,7 @@ from solution import RTBProblem
 
 def main():
     if len(sys.argv) > 1:
-        board = RTBProblem(None)
+        board = RTBProblem()
         with open(sys.argv[1], "r") as fh:
             board.load(fh)
         # print_board(board)
