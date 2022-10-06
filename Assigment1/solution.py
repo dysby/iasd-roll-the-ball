@@ -176,7 +176,7 @@ class RTBProblem(search.Problem):
             if line[0] == "#":
                 # we don't care for comments
                 continue
-            elif line[0] in "013456789":
+            elif line[0] in "0123456789":
                 # line start with a digit, it must be the problem size definition line.
                 self.N = int(line)
             elif line == "":
