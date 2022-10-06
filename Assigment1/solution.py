@@ -184,7 +184,6 @@ class RTBProblem(search.Problem):
                 continue
             else:
                 # all other lines are, in sequence, corresponding to each board line configuration.
-                # row = [tile for tile in line.split(" ")]
                 row = [tile for tile in line.split()]
                 board += row
 
@@ -207,12 +206,12 @@ class RTBProblem(search.Problem):
         # initial position, flow will not be defined, can be any value
         current_loc, flow = _find_init(), Flow.DOWN
 
-        print(current_loc, board)
+        # print(current_loc, board)
         while True:
             current_loc, flow = follow_func[
                 board[current_loc[0] * self.N + current_loc[1]]
             ](current_loc, flow)
-            print(flow, current_loc, board[current_loc[0] * self.N + current_loc[1]])
+            # print(flow, current_loc, board[current_loc[0] * self.N + current_loc[1]])
 
             # tile is not compatible: broke the flow or flows outside
             if (
