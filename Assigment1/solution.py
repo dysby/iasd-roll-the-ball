@@ -152,6 +152,11 @@ follow_func = {
     "empty-cell": follow_no_passage,
 }
 
+initial_tile_types = {"initial-left", "initial-right", "initial-top", "initial-down"}
+goal_tile_types = { "goal-left", "goal-right", "goal-top", "goal-down"}
+# use | for set union and & for set intersection
+unmovable_tile_types = initial_tile_types | goal_tile_types | { "right-left-not", "top-down-not", "right-top-not", "right-down-not", "left-top-not", "left-down-not", "no-passage-not"}
+
 
 class RTBProblem(search.Problem):
     def __init__(self):
@@ -160,8 +165,7 @@ class RTBProblem(search.Problem):
         the initial state of the puzzle should be saved.
         init initial state with empty tupple
         """
-        super().__init__(())
-        # self.initial = ()
+        self.initial = ()
         self.N = 0
 
     def load(self, fh):
@@ -175,6 +179,9 @@ class RTBProblem(search.Problem):
             elif line[0] in "013456789":
                 # line start with a digit, it must be the problem size definition line.
                 self.N = int(line)
+            elif line == "":
+                # discard empty line
+                continue
             else:
                 # all other lines are, in sequence, corresponding to each board line configuration.
                 # row = [tile for tile in line.split(" ")]
@@ -186,24 +193,21 @@ class RTBProblem(search.Problem):
     def isSolution(self):
         """returns 1 if the loaded puzzle is a solution, 0 otherwise."""
         board = self.initial
-        print(board)
+        # hack for pub10
+        if self.N == 0 and len(board) > 0:
+            self.N = int(len(board)**0.5)
 
         def _find_init():
             """Locate the initial tile on the board, and set initial flow."""
             for idx, tile in enumerate(board):
-                if tile in (
-                    "initial-left",
-                    "initial-right",
-                    "initial-top",
-                    "initial-down",
-                ):
+                if tile in initial_tile_types:
                     return (idx // self.N, idx % self.N)
             raise ValueError("did not find initial tile")
 
-        # initial position, flow is not defined, can be any value
+        # initial position, flow will not be defined, can be any value
         current_loc, flow = _find_init(), Flow.DOWN
 
-        print(current_loc, board[current_loc[0] * self.N + current_loc[1]])
+        print(current_loc, board)
         while True:
             current_loc, flow = follow_func[
                 board[current_loc[0] * self.N + current_loc[1]]
@@ -221,21 +225,11 @@ class RTBProblem(search.Problem):
                 return 0
 
             # reached another initial tile, not solvable
-            if board[current_loc[0] * self.N + current_loc[1]] in (
-                "initial-left",
-                "initial-right",
-                "initial-top",
-                "initial-down",
-            ):
+            if board[current_loc[0] * self.N + current_loc[1]] in initial_tile_types:
                 return 0
 
             # found a goal tile, is it compatible?
-            if board[current_loc[0] * self.N + current_loc[1]] in (
-                "goal-top",
-                "goal-down",
-                "goal-left",
-                "goal-right",
-            ):
+            if board[current_loc[0] * self.N + current_loc[1]] in goal_tile_types:
                 # final flow test to check if goal tile is compatible
                 current_loc, flow = follow_func[
                     board[current_loc[0] * self.N + current_loc[1]]
