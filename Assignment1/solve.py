@@ -10,9 +10,9 @@ def main():
             board.load(fh)
         # print_board(board)
         if board.isSolution():
-            print("Solution:")
+            print("Is solution")
         else:
-            print("Unsolvable")
+            print("Not solution")
 
     else:
         print(f"Usage: {sys.argv[0]} <filename>")
