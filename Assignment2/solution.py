@@ -203,46 +203,6 @@ unmovable_tile_types = (
 )
 
 
-compatible_tiles = {
-    "initial-left": [
-        "right-top",
-        "right-top-not",
-        "right-down",
-        "right-down-not",
-        "right-left",
-        "right-left-not",
-    ],
-    "initial-right": [
-        "left-top",
-        "left-top-not",
-        "left-down",
-        "left-down-not",
-        "right-left",
-        "right-left-not",
-    ],
-    "initial-top": [],
-    "initial-down": [],
-    "goal-left": [],
-    "goal-right": [],
-    "goal-top": [],
-    "goal-down": [],
-    "right-left-not": [],
-    "top-down-not": [],
-    "right-top-not": [],
-    "right-down-not": [],
-    "left-top-not": [],
-    "left-down-not": [],
-    "no-passage-not": [],
-    "right-left": [],
-    "top-down": [],
-    "right-top": [],
-    "right-down": [],
-    "left-top": [],
-    "left-down": [],
-    "no-passage": [],
-    "empty-cell": [],
-}
-
 # Typing Definitions
 # State is a tuple of varying size of strings (tile names)
 # Actions type is a tuple of varying size of Action
