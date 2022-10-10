@@ -33,7 +33,7 @@ def test_public_05():
 
 def test_public_06():
     with open("public_tests/pub06.dat") as fh:
-        assert solve(fh) == 1
+        assert solve(fh) == 0
        
 def test_public_07():
     with open("public_tests/pub07.dat") as fh:
