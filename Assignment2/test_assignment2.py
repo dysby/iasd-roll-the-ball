@@ -32,6 +32,7 @@ def test_public_05():
         assert solve(fh) == 1
 
 def test_public_06():
+    # Not solvable
     with open("public_tests/pub06.dat") as fh:
         assert solve(fh) == 0
        
@@ -40,8 +41,9 @@ def test_public_07():
         assert solve(fh) == 1
 
 def test_public_08():
+    # Not solvable
     with open("public_tests/pub08.dat") as fh:
-        assert solve(fh) == 1
+        assert solve(fh) == 0
 
 def test_public_09():
     with open("public_tests/pub09.dat") as fh:
