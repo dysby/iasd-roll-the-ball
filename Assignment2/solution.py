@@ -13,11 +13,11 @@ class Direction(Enum):
 
 class Flow(Enum):
     """
-    *Flow* is the direction of an imaginary ball ariving at the current tile,
+    *Flow* is the direction of an imaginary ball arriving at the current tile,
     following a correct path from the initial tile.
 
     For example, if we are on a tile with a exit to the right, the flow will become left,
-    because the next tile will see the ball comming from the left.
+    because the next tile will see the ball coming from the left.
     """
 
     TOP = auto()
@@ -230,14 +230,14 @@ class RTBProblem(search.Problem):
         board: list[str] = []
 
         for line in fh.read().splitlines():
-            if line[0] == "#":
-                # we don't care for comments
+            if line == "":
+                # discard empty line
                 continue
             elif line[0] in "0123456789":
                 # line start with a digit, it must be the problem size definition line.
                 self.N = int(line)
-            elif line == "":
-                # discard empty line
+            elif line[0] == "#":
+                # we don't care for comments
                 continue
             else:
                 # all other lines are, in sequence, corresponding to each board line configuration.
@@ -381,7 +381,7 @@ class RTBProblem(search.Problem):
     def solve(self):
         """Calls the uninformed search algorithm chosen."""
         solution = self.algorithm(self)
-        self.final = solution.state
+        # self.final = solution.state
         return solution
         # You have to provide the arguments for the
         # chosen algorithm if any.
