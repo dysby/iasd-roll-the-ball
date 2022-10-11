@@ -1,6 +1,6 @@
 # this is also a comment line
 4
-initial-down right-down left-down-not empty-cell
-top-down top-down top-down goal-down
-top-down top-down top-down top-down-not
-right-top left-top right-top left-top
+right-down-not right-left right-left left-down
+right-top left-down initial-right left-top-not
+top-down right-top left-down-not empty-cell
+goal-left right-left left-top no-passage-not

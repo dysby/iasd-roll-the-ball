@@ -1,8 +1,6 @@
-# a little bigger
-6
-right-down right-left right-left left-down right-down left-down
-right-top right-left left-down right-top left-top top-down
-right-down left-down initial-top right-down left-down top-down
-top-down right-top left-down top-down top-down top-down
-right-top left-down right-top left-top top-down top-down
-goal-right left-top empty-cell empty-cell right-top left-top
+# this is also a comment line
+4
+initial-down right-down-not left-down goal-down
+top-down top-down top-down empty-cell
+top-down top-down top-down top-down-not
+right-top left-top right-top left-top
