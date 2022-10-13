@@ -33,7 +33,7 @@ class Tile(Enum):
     INITIAL_TOP = "initial-top"
     INITIAL_DOWN = "initial-down"
     GOAL_LEFT = "goal-left"
-    GOAL_RIGHT = ""
+    GOAL_RIGHT = "goal-right"
     GOAL_TOP = "goal-top"
     GOAL_DOWN = "goal-down"
     RIGHT_LEFT_NOT = "right-left-not"
@@ -51,6 +51,33 @@ class Tile(Enum):
     LEFT_DOWN = "left-down"
     NO_PASSAGE = "no-passage"
     EMPTY_CELL = "empty-cell"
+
+
+map_tile_types = {
+    "initial-left": Tile.INITIAL_LEFT,
+    "initial-right": Tile.INITIAL_RIGHT,
+    "initial-top": Tile.INITIAL_TOP,
+    "initial-down": Tile.INITIAL_DOWN,
+    "goal-left": Tile.GOAL_LEFT,
+    "goal-right": Tile.GOAL_RIGHT,
+    "goal-top": Tile.GOAL_TOP,
+    "goal-down": Tile.GOAL_DOWN,
+    "right-left-not": Tile.RIGHT_LEFT_NOT,
+    "top-down-not": Tile.TOP_DOWN_NOT,
+    "right-top-not": Tile.RIGHT_TOP_NOT,
+    "right-down-not": Tile.RIGHT_DOWN_NOT,
+    "left-top-not": Tile.LEFT_TOP_NOT,
+    "left-down-not": Tile.LEFT_DOWN_NOT,
+    "no-passage-not": Tile.NO_PASSAGE_NOT,
+    "right-left": Tile.RIGHT_LEFT,
+    "top-down": Tile.TOP_DOWN,
+    "right-top": Tile.RIGHT_TOP,
+    "right-down": Tile.RIGHT_DOWN,
+    "left-top": Tile.LEFT_TOP,
+    "left-down": Tile.LEFT_DOWN,
+    "no-passage": Tile.NO_PASSAGE,
+    "empty-cell": Tile.EMPTY_CELL,
+}
 
 
 def follow_initial_left(
@@ -158,59 +185,63 @@ def follow_left_down(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int],
 def follow_no_passage(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
     return (loc, Flow.ERROR)
 
-
 follow_func = {
-    "initial-left": follow_initial_left,
-    "initial-right": follow_initial_right,
-    "initial-top": follow_initial_top,
-    "initial-down": follow_initial_down,
-    "goal-left": follow_goal_left,
-    "goal-right": follow_goal_right,
-    "goal-top": follow_goal_top,
-    "goal-down": follow_goal_down,
-    "right-left-not": follow_right_left,
-    "top-down-not": follow_top_down,
-    "right-top-not": follow_right_top,
-    "right-down-not": follow_right_down,
-    "left-top-not": follow_left_top,
-    "left-down-not": follow_left_down,
-    "no-passage-not": follow_no_passage,
-    "right-left": follow_right_left,
-    "top-down": follow_top_down,
-    "right-top": follow_right_top,
-    "right-down": follow_right_down,
-    "left-top": follow_left_top,
-    "left-down": follow_left_down,
-    "no-passage": follow_no_passage,
-    "empty-cell": follow_no_passage,
+    Tile.INITIAL_LEFT: follow_initial_left,
+    Tile.INITIAL_RIGHT: follow_initial_right,
+    Tile.INITIAL_TOP: follow_initial_top,
+    Tile.INITIAL_DOWN: follow_initial_down,
+    Tile.GOAL_LEFT: follow_goal_left,
+    Tile.GOAL_RIGHT: follow_goal_right,
+    Tile.GOAL_TOP: follow_goal_top,
+    Tile.GOAL_DOWN: follow_goal_down,
+    Tile.RIGHT_LEFT_NOT: follow_right_left,
+    Tile.TOP_DOWN_NOT: follow_top_down,
+    Tile.RIGHT_TOP_NOT: follow_right_top,
+    Tile.RIGHT_DOWN_NOT: follow_right_down,
+    Tile.LEFT_TOP_NOT: follow_left_top,
+    Tile.LEFT_DOWN_NOT: follow_left_down,
+    Tile.NO_PASSAGE_NOT: follow_no_passage,
+    Tile.RIGHT_LEFT: follow_right_left,
+    Tile.TOP_DOWN: follow_top_down,
+    Tile.RIGHT_TOP: follow_right_top,
+    Tile.RIGHT_DOWN: follow_right_down,
+    Tile.LEFT_TOP: follow_left_top,
+    Tile.LEFT_DOWN: follow_left_down,
+    Tile.NO_PASSAGE: follow_no_passage,
+    Tile.EMPTY_CELL: follow_no_passage,
 }
 
-initial_tile_types = {"initial-left", "initial-right", "initial-top", "initial-down"}
-goal_tile_types = {"goal-left", "goal-right", "goal-top", "goal-down"}
+
+initial_tile_types = {
+    Tile.INITIAL_LEFT,
+    Tile.INITIAL_RIGHT,
+    Tile.INITIAL_TOP,
+    Tile.INITIAL_DOWN,
+}
+goal_tile_types = {Tile.GOAL_LEFT, Tile.GOAL_RIGHT, Tile.GOAL_TOP, Tile.GOAL_DOWN}
 # use | for set union and & for set intersection
 unmovable_tile_types = (
     initial_tile_types
     | goal_tile_types
     | {
-        "right-left-not",
-        "top-down-not",
-        "right-top-not",
-        "right-down-not",
-        "left-top-not",
-        "left-down-not",
-        "no-passage-not",
+        Tile.RIGHT_LEFT_NOT,
+        Tile.TOP_DOWN_NOT,
+        Tile.RIGHT_TOP_NOT,
+        Tile.RIGHT_DOWN_NOT,
+        Tile.LEFT_TOP_NOT,
+        Tile.LEFT_DOWN_NOT,
+        Tile.NO_PASSAGE_NOT,
     }
 )
-
 
 # Typing Definitions
 # State is a tuple of varying size of strings (tile names)
 # Actions type is a tuple of varying size of Action
 # Each Action is a tuple with ((y,x), direction), a tile (only empty-cell) position
 # and a direction to move.
-State = Tuple[str, ...]
+State = Tuple[Tile, ...]
 Location = Tuple[int, int]
-Action = Tuple[Location, Direction]
+Action = Tuple[Location, Location]
 Actions = Tuple[Action, ...]
 
 
@@ -227,7 +258,7 @@ class RTBProblem(search.Problem):
 
     def load(self, fh):
         """Loads a RTB puzzle from the file object fh. You may initialize self.initial here."""
-        board: list[str] = []
+        board: list[Tile] = []
 
         for line in fh.read().splitlines():
             if line == "":
@@ -241,7 +272,7 @@ class RTBProblem(search.Problem):
                 continue
             else:
                 # all other lines are, in sequence, corresponding to each board line configuration.
-                row = [tile for tile in line.split()]
+                row = [map_tile_types[tile] for tile in line.split()]
                 board += row
 
         self.initial = tuple(board)
@@ -263,21 +294,8 @@ class RTBProblem(search.Problem):
 
     def result(self, state: State, action: Action) -> State:
         """Return the state that results from executing the given action in the given state."""
-        loc = action[0]
-
-        if action[1] == Direction.UP:
-            loc_neighbor = loc[0] - 1, loc[1]
-        elif action[1] == Direction.DOWN:
-            loc_neighbor = loc[0] + 1, loc[1]
-        elif action[1] == Direction.LEFT:
-            loc_neighbor = loc[0], loc[1] - 1
-        elif action[1] == Direction.RIGTH:
-            loc_neighbor = loc[0], loc[1] + 1
-        else:
-            raise ValueError("Invalid Direction")
-
-        loc_index = self._loc_to_index(loc)  # to call only once
-        loc_neighbor_index = self._loc_to_index(loc_neighbor)
+        loc_index = self._loc_to_index(action[0])  # to call only once
+        loc_neighbor_index = self._loc_to_index(action[1])
 
         list_state = list(state)
         # Swapping element at index loc with element at index loc_neighbor
@@ -293,10 +311,10 @@ class RTBProblem(search.Problem):
         """
         actions = []
 
-        def _find_emptys() -> Tuple[Location, ...]:
+        def _find_emptys() -> list[Location]:
             """
             return the locations of 'empty-cell' tiles in state
-            
+
             >>> problem.initial
             ('right-down', 'right-left', 'right-left', 'initial-left', 'right-top', 'right-left', 'right-left', 'left-down', 'goal-right', 'right-left', 'right-left', 'left-top', 'empty-cell', 'empty-cell', 'empty-cell', 'empty-cell')
             >>> [idx for idx, tile in enumerate(problem.initial) if tile == "empty-cell"]
@@ -305,35 +323,43 @@ class RTBProblem(search.Problem):
             locs = [
                 (idx // self.N, idx % self.N)
                 for idx, tile in enumerate(state)
-                if tile == "empty-cell"
+                if tile == Tile.EMPTY_CELL
             ]
-            return tuple(locs)
+            return locs
 
         def _valid_destination(candidate_loc):
             """test if the candidate location is inside bounds and the tile is not unmovable or another empty-cell"""
-            if not self._in_bounds(candidate_loc):
+            # if not self._in_bounds(candidate_loc):
+            if (
+                candidate_loc[0] < 0
+                or candidate_loc[0] >= self.N
+                or candidate_loc[1] < 0
+                or candidate_loc[1] >= self.N
+            ):
                 return False
             tile = state[candidate_loc[0] * self.N + candidate_loc[1]]
-            if tile in unmovable_tile_types | {"empty-cell"}:
+            if tile in unmovable_tile_types | {Tile.EMPTY_CELL}:
                 return False
             return True
 
         empties = _find_emptys()
         for empty_loc in empties:
-            for direction in Direction:
-                if direction == Direction.UP:
-                    candidate_loc = empty_loc[0] - 1, empty_loc[1]
-                elif direction == Direction.DOWN:
-                    candidate_loc = empty_loc[0] + 1, empty_loc[1]
-                elif direction == Direction.LEFT:
-                    candidate_loc = empty_loc[0], empty_loc[1] - 1
-                elif direction == Direction.RIGTH:
-                    candidate_loc = empty_loc[0], empty_loc[1] + 1
-                else:
-                    raise ValueError
-
-                if _valid_destination(candidate_loc):
-                    actions.append((empty_loc, direction))
+            #     Direction.UP:
+            candidate_loc = empty_loc[0] - 1, empty_loc[1]
+            if _valid_destination(candidate_loc):
+                actions.append((empty_loc, candidate_loc))
+            #     Direction.DOWN:
+            candidate_loc = empty_loc[0] + 1, empty_loc[1]
+            if _valid_destination(candidate_loc):
+                actions.append((empty_loc, candidate_loc))
+            #     Direction.LEFT:
+            candidate_loc = empty_loc[0], empty_loc[1] - 1
+            if _valid_destination(candidate_loc):
+                actions.append((empty_loc, candidate_loc))
+            #     Direction.RIGTH:
+            candidate_loc = empty_loc[0], empty_loc[1] + 1
+            if _valid_destination(candidate_loc):
+                actions.append((empty_loc, candidate_loc))
 
         return tuple(actions)
 
