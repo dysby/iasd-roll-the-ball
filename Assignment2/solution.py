@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from enum import Enum, auto
 
 import search
@@ -28,29 +28,29 @@ class Flow(Enum):
 
 
 class Tile(Enum):
-    INITIAL_LEFT = "initial-left"
-    INITIAL_RIGHT = "initial-right"
-    INITIAL_TOP = "initial-top"
-    INITIAL_DOWN = "initial-down"
-    GOAL_LEFT = "goal-left"
-    GOAL_RIGHT = "goal-right"
-    GOAL_TOP = "goal-top"
-    GOAL_DOWN = "goal-down"
-    RIGHT_LEFT_NOT = "right-left-not"
-    TOP_DOWN_NOT = "top-down-not"
-    RIGHT_TOP_NOT = "right-top-not"
-    RIGHT_DOWN_NOT = "right-down-not"
-    LEFT_TOP_NOT = "left-top-not"
-    LEFT_DOWN_NOT = "left-down-not"
-    NO_PASSAGE_NOT = "no-passage-not"
-    RIGHT_LEFT = "right-left"
-    TOP_DOWN = "top-down"
-    RIGHT_TOP = "right-top"
-    RIGHT_DOWN = "right-down"
-    LEFT_TOP = "left-top"
-    LEFT_DOWN = "left-down"
-    NO_PASSAGE = "no-passage"
-    EMPTY_CELL = "empty-cell"
+    INITIAL_LEFT = auto()
+    INITIAL_RIGHT = auto()
+    INITIAL_TOP = auto()
+    INITIAL_DOWN = auto()
+    GOAL_LEFT = auto()
+    GOAL_RIGHT = auto()
+    GOAL_TOP = auto()
+    GOAL_DOWN = auto()
+    RIGHT_LEFT_NOT = auto()
+    TOP_DOWN_NOT = auto()
+    RIGHT_TOP_NOT = auto()
+    RIGHT_DOWN_NOT = auto()
+    LEFT_TOP_NOT = auto()
+    LEFT_DOWN_NOT = auto()
+    NO_PASSAGE_NOT = auto()
+    RIGHT_LEFT = auto()
+    TOP_DOWN = auto()
+    RIGHT_TOP = auto()
+    RIGHT_DOWN = auto()
+    LEFT_TOP = auto()
+    LEFT_DOWN = auto()
+    NO_PASSAGE = auto()
+    EMPTY_CELL = auto()
 
 
 map_tile_types = {
@@ -258,7 +258,7 @@ class RTBProblem(search.Problem):
 
     def load(self, fh):
         """Loads a RTB puzzle from the file object fh. You may initialize self.initial here."""
-        board: list[Tile] = []
+        board: List[Tile] = []
 
         for line in fh.read().splitlines():
             if line == "":
@@ -311,7 +311,7 @@ class RTBProblem(search.Problem):
         """
         actions = []
 
-        def _find_emptys() -> list[Location]:
+        def _find_emptys() -> List[Location]:
             """
             return the locations of 'empty-cell' tiles in state
 
@@ -398,8 +398,8 @@ class RTBProblem(search.Problem):
 
     def setAlgorithm(self):
         """Sets the uninformed search algorithm chosen."""
-        self.algorithm = search.breadth_first_graph_search
-        # example : self.algorithm = search.breadth_first_tree_search
+        #self.algorithm = search.iterative_deepening_search        # example : self.algorithm = search.breadth_first_tree_search
+        self.algorithm = search.breadth_first_graph_search        # example : self.algorithm = search.breadth_first_tree_search
         # substitute by the function in search.py that
         # implements the chosen algorithm.
         # You can only use the algorithms defined in search.py
