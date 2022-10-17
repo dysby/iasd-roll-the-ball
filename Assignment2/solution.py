@@ -28,29 +28,35 @@ class Flow(Enum):
 
 
 class Tile(Enum):
-    INITIAL_LEFT = auto()
-    INITIAL_RIGHT = auto()
-    INITIAL_TOP = auto()
-    INITIAL_DOWN = auto()
-    GOAL_LEFT = auto()
-    GOAL_RIGHT = auto()
-    GOAL_TOP = auto()
-    GOAL_DOWN = auto()
-    RIGHT_LEFT_NOT = auto()
-    TOP_DOWN_NOT = auto()
-    RIGHT_TOP_NOT = auto()
-    RIGHT_DOWN_NOT = auto()
-    LEFT_TOP_NOT = auto()
-    LEFT_DOWN_NOT = auto()
-    NO_PASSAGE_NOT = auto()
-    RIGHT_LEFT = auto()
-    TOP_DOWN = auto()
-    RIGHT_TOP = auto()
-    RIGHT_DOWN = auto()
-    LEFT_TOP = auto()
-    LEFT_DOWN = auto()
-    NO_PASSAGE = auto()
-    EMPTY_CELL = auto()
+    """
+    Tile Class assigns a byte string to a type of tile.
+    This way the state will be a byte string,
+    and __eq__ of byte strings is very fast.
+    """
+
+    INITIAL_LEFT = b"00000"
+    INITIAL_RIGHT = b"00001"
+    INITIAL_TOP = b"00010"
+    INITIAL_DOWN = b"00011"
+    GOAL_LEFT = b"00100"
+    GOAL_RIGHT = b"00101"
+    GOAL_TOP = b"00110"
+    GOAL_DOWN = b"00111"
+    RIGHT_LEFT_NOT = b"01000"
+    TOP_DOWN_NOT = b"01001"
+    RIGHT_TOP_NOT = b"01010"
+    RIGHT_DOWN_NOT = b"01011"
+    LEFT_TOP_NOT = b"01100"
+    LEFT_DOWN_NOT = b"01101"
+    NO_PASSAGE_NOT = b"01110"
+    RIGHT_LEFT = b"01111"
+    TOP_DOWN = b"10000"
+    RIGHT_TOP = b"10001"
+    RIGHT_DOWN = b"10010"
+    LEFT_TOP = b"10011"
+    LEFT_DOWN = b"10100"
+    NO_PASSAGE = b"10101"
+    EMPTY_CELL = b"10110"
 
 
 map_tile_types = {
@@ -77,6 +83,32 @@ map_tile_types = {
     "left-down": Tile.LEFT_DOWN,
     "no-passage": Tile.NO_PASSAGE,
     "empty-cell": Tile.EMPTY_CELL,
+}
+
+map_bytes_to_tiles = {
+    b"00000": Tile.INITIAL_LEFT,
+    b"00001": Tile.INITIAL_RIGHT,
+    b"00010": Tile.INITIAL_TOP,
+    b"00011": Tile.INITIAL_DOWN,
+    b"00100": Tile.GOAL_LEFT,
+    b"00101": Tile.GOAL_RIGHT,
+    b"00110": Tile.GOAL_TOP,
+    b"00111": Tile.GOAL_DOWN,
+    b"01000": Tile.RIGHT_LEFT_NOT,
+    b"01001": Tile.TOP_DOWN_NOT,
+    b"01010": Tile.RIGHT_TOP_NOT,
+    b"01011": Tile.RIGHT_DOWN_NOT,
+    b"01100": Tile.LEFT_TOP_NOT,
+    b"01101": Tile.LEFT_DOWN_NOT,
+    b"01110": Tile.NO_PASSAGE_NOT,
+    b"01111": Tile.RIGHT_LEFT,
+    b"10000": Tile.TOP_DOWN,
+    b"10001": Tile.RIGHT_TOP,
+    b"10010": Tile.RIGHT_DOWN,
+    b"10011": Tile.LEFT_TOP,
+    b"10100": Tile.LEFT_DOWN,
+    b"10101": Tile.NO_PASSAGE,
+    b"10110": Tile.EMPTY_CELL,
 }
 
 
@@ -185,6 +217,7 @@ def follow_left_down(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int],
 def follow_no_passage(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
     return (loc, Flow.ERROR)
 
+
 follow_func = {
     Tile.INITIAL_LEFT: follow_initial_left,
     Tile.INITIAL_RIGHT: follow_initial_right,
@@ -239,7 +272,7 @@ unmovable_tile_types = (
 # Actions type is a tuple of varying size of Action
 # Each Action is a tuple with ((y,x), direction), a tile (only empty-cell) position
 # and a direction to move.
-State = Tuple[Tile, ...]
+State = bytes
 Location = Tuple[int, int]
 Action = Tuple[Location, Location]
 Actions = Tuple[Action, ...]
@@ -252,13 +285,14 @@ class RTBProblem(search.Problem):
         the initial state of the puzzle should be saved.
         init initial state with empty tupple
         """
-        self.initial: State = ()
+        self.initial: State = b""
         self.algorithm = None
         self.N = 0
 
     def load(self, fh):
         """Loads a RTB puzzle from the file object fh. You may initialize self.initial here."""
-        board: List[Tile] = []
+        # board: bytes = b""
+        board = []
 
         for line in fh.read().splitlines():
             if line == "":
@@ -273,15 +307,26 @@ class RTBProblem(search.Problem):
             else:
                 # all other lines are, in sequence, corresponding to each board line configuration.
                 row = [map_tile_types[tile] for tile in line.split()]
+                # board = b"".join([board, *row])
                 board += row
 
-        self.initial = tuple(board)
+        self.initial = self._list_to_state(board)
 
     def _loc_to_index(self, loc: Location) -> int:
         return int(self.N * loc[0] + loc[1])
 
+    def _state_to_list(self, state):
+        # 5 is the number of bits to describe each type of tile
+        return [
+            map_bytes_to_tiles[state[i * 5 : (i + 1) * 5]] for i in range(self.N**2)
+        ]
+
+    def _list_to_state(self, state_list):
+        return b"".join([tile.value for tile in state_list])
+
     def _find_init(self, state) -> Location:
         """Locate the initial tile on the state, and set initial flow."""
+
         for idx, tile in enumerate(state):
             if tile in initial_tile_types:
                 return (idx // self.N, idx % self.N)
@@ -297,19 +342,20 @@ class RTBProblem(search.Problem):
         loc_index = self._loc_to_index(action[0])  # to call only once
         loc_neighbor_index = self._loc_to_index(action[1])
 
-        list_state = list(state)
+        list_state = self._state_to_list(state)
         # Swapping element at index loc with element at index loc_neighbor
         list_state[loc_index], list_state[loc_neighbor_index] = (
             list_state[loc_neighbor_index],
             list_state[loc_index],
         )
-        return tuple(list_state)
+        return self._list_to_state(list_state)
 
     def actions(self, state: State) -> Actions:
         """
         Return the actions that can be executed in the given state.
         """
         actions = []
+        state_list = self._state_to_list(state)
 
         def _find_emptys() -> List[Location]:
             """
@@ -322,7 +368,7 @@ class RTBProblem(search.Problem):
             """
             locs = [
                 (idx // self.N, idx % self.N)
-                for idx, tile in enumerate(state)
+                for idx, tile in enumerate(state_list)
                 if tile == Tile.EMPTY_CELL
             ]
             return locs
@@ -337,7 +383,7 @@ class RTBProblem(search.Problem):
                 or candidate_loc[1] >= self.N
             ):
                 return False
-            tile = state[candidate_loc[0] * self.N + candidate_loc[1]]
+            tile = state_list[candidate_loc[0] * self.N + candidate_loc[1]]
             if tile in unmovable_tile_types | {Tile.EMPTY_CELL}:
                 return False
             return True
@@ -365,16 +411,19 @@ class RTBProblem(search.Problem):
 
     def goal_test(self, state) -> bool:
         """Return True if the state is a goal."""
-        if self.N == 0 and len(state) > 0:
-            self.N = int(len(state) ** 0.5)
+
+        state_list = self._state_to_list(state)
+        if self.N == 0 and len(state_list) > 0:
+            # remember each state is a
+            self.N = int(len(state_list) ** 0.5)
 
         # initial position, flow will not be defined, can be any value
-        current_loc, flow = self._find_init(state), Flow.DOWN
+        current_loc, flow = self._find_init(state_list), Flow.DOWN
 
         # print(current_loc, state)
         while True:
             current_loc, flow = follow_func[
-                state[current_loc[0] * self.N + current_loc[1]]
+                state_list[current_loc[0] * self.N + current_loc[1]]
             ](current_loc, flow)
             # print(flow, current_loc, state[current_loc[0] * self.N + current_loc[1]])
 
@@ -383,14 +432,17 @@ class RTBProblem(search.Problem):
                 return False
 
             # reached another initial tile, not solvable
-            if state[current_loc[0] * self.N + current_loc[1]] in initial_tile_types:
+            if (
+                state_list[current_loc[0] * self.N + current_loc[1]]
+                in initial_tile_types
+            ):
                 return False
 
             # found a goal tile, is it compatible?
-            if state[current_loc[0] * self.N + current_loc[1]] in goal_tile_types:
+            if state_list[current_loc[0] * self.N + current_loc[1]] in goal_tile_types:
                 # final flow test to check if goal tile is compatible
                 current_loc, flow = follow_func[
-                    state[current_loc[0] * self.N + current_loc[1]]
+                    state_list[current_loc[0] * self.N + current_loc[1]]
                 ](current_loc, flow)
                 if flow == Flow.ERROR:
                     return False
@@ -398,8 +450,9 @@ class RTBProblem(search.Problem):
 
     def setAlgorithm(self):
         """Sets the uninformed search algorithm chosen."""
-        #self.algorithm = search.iterative_deepening_search        # example : self.algorithm = search.breadth_first_tree_search
-        self.algorithm = search.breadth_first_graph_search        # example : self.algorithm = search.breadth_first_tree_search
+        # self.algorithm = search.iterative_deepening_search        # example : self.algorithm = search.breadth_first_tree_search
+        self.algorithm = search.breadth_first_graph_search
+        # self.algorithm = search.depth_first_graph_search
         # substitute by the function in search.py that
         # implements the chosen algorithm.
         # You can only use the algorithms defined in search.py
