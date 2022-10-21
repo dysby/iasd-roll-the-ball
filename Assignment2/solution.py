@@ -20,63 +20,6 @@ class Flow(Enum):
     ERROR = auto()
 
 
-class Tile(Enum):
-    """
-    Tile Class assigns a byte string to a type of tile.
-    This way the state will be a byte string,
-    and __eq__ of byte strings is very fast.
-    """
-    INITIAL_LEFT = b"00000"
-    INITIAL_RIGHT = b"00001"
-    INITIAL_TOP = b"00010"
-    INITIAL_DOWN = b"00011"
-    GOAL_LEFT = b"00100"
-    GOAL_RIGHT = b"00101"
-    GOAL_TOP = b"00110"
-    GOAL_DOWN = b"00111"
-    RIGHT_LEFT_NOT = b"01000"
-    TOP_DOWN_NOT = b"01001"
-    RIGHT_TOP_NOT = b"01010"
-    RIGHT_DOWN_NOT = b"01011"
-    LEFT_TOP_NOT = b"01100"
-    LEFT_DOWN_NOT = b"01101"
-    NO_PASSAGE_NOT = b"01110"
-    RIGHT_LEFT = b"01111"
-    TOP_DOWN = b"10000"
-    RIGHT_TOP = b"10001"
-    RIGHT_DOWN = b"10010"
-    LEFT_TOP = b"10011"
-    LEFT_DOWN = b"10100"
-    NO_PASSAGE = b"10101"
-    EMPTY_CELL = b"10110"
-
-
-map_tile_types = {
-    "initial-left": Tile.INITIAL_LEFT,
-    "initial-right": Tile.INITIAL_RIGHT,
-    "initial-top": Tile.INITIAL_TOP,
-    "initial-down": Tile.INITIAL_DOWN,
-    "goal-left": Tile.GOAL_LEFT,
-    "goal-right": Tile.GOAL_RIGHT,
-    "goal-top": Tile.GOAL_TOP,
-    "goal-down": Tile.GOAL_DOWN,
-    "right-left-not": Tile.RIGHT_LEFT_NOT,
-    "top-down-not": Tile.TOP_DOWN_NOT,
-    "right-top-not": Tile.RIGHT_TOP_NOT,
-    "right-down-not": Tile.RIGHT_DOWN_NOT,
-    "left-top-not": Tile.LEFT_TOP_NOT,
-    "left-down-not": Tile.LEFT_DOWN_NOT,
-    "no-passage-not": Tile.NO_PASSAGE_NOT,
-    "right-left": Tile.RIGHT_LEFT,
-    "top-down": Tile.TOP_DOWN,
-    "right-top": Tile.RIGHT_TOP,
-    "right-down": Tile.RIGHT_DOWN,
-    "left-top": Tile.LEFT_TOP,
-    "left-down": Tile.LEFT_DOWN,
-    "no-passage": Tile.NO_PASSAGE,
-    "empty-cell": Tile.EMPTY_CELL,
-}
-
 map_tile_to_bytes = {
     "initial-left": b"00000",
     "initial-right": b"00001",
@@ -101,256 +44,6 @@ map_tile_to_bytes = {
     "left-down": b"10100",
     "no-passage": b"10101",
     "empty-cell": b"10110",
-}
-
-map_bytes_to_tiles = {
-    b"00000": Tile.INITIAL_LEFT,
-    b"00001": Tile.INITIAL_RIGHT,
-    b"00010": Tile.INITIAL_TOP,
-    b"00011": Tile.INITIAL_DOWN,
-    b"00100": Tile.GOAL_LEFT,
-    b"00101": Tile.GOAL_RIGHT,
-    b"00110": Tile.GOAL_TOP,
-    b"00111": Tile.GOAL_DOWN,
-    b"01000": Tile.RIGHT_LEFT_NOT,
-    b"01001": Tile.TOP_DOWN_NOT,
-    b"01010": Tile.RIGHT_TOP_NOT,
-    b"01011": Tile.RIGHT_DOWN_NOT,
-    b"01100": Tile.LEFT_TOP_NOT,
-    b"01101": Tile.LEFT_DOWN_NOT,
-    b"01110": Tile.NO_PASSAGE_NOT,
-    b"01111": Tile.RIGHT_LEFT,
-    b"10000": Tile.TOP_DOWN,
-    b"10001": Tile.RIGHT_TOP,
-    b"10010": Tile.RIGHT_DOWN,
-    b"10011": Tile.LEFT_TOP,
-    b"10100": Tile.LEFT_DOWN,
-    b"10101": Tile.NO_PASSAGE,
-    b"10110": Tile.EMPTY_CELL,
-}
-
-
-def roll_ball(tile, loc, flow):
-    if tile == b"00000":  # follow_initial_left
-        loc, flow = ((loc[0], loc[1] - 1), Flow.RIGHT)
-    elif tile == b"00001":  # follow_initial_right,
-        loc, flow = ((loc[0], loc[1] + 1), Flow.LEFT)
-    elif tile == b"00010":  # follow_initial_top,
-        loc, flow = ((loc[0] - 1, loc[1]), Flow.DOWN)
-    elif tile == b"00011":  # follow_initial_down,
-        loc, flow = ((loc[0] + 1, loc[1]), Flow.TOP)
-    elif tile == b"00100":  # follow_goal_left,
-        if flow != Flow.LEFT:
-            # new_flow = Flow.ERROR
-            return False
-        return True
-    elif tile == b"00101":  # follow_goal_right,
-        if flow != Flow.RIGHT:
-            # new_flow = Flow.ERROR
-            return False
-        return True
-    elif tile == b"00110":  # follow_goal_top,
-        if flow != Flow.TOP:
-            # new_flow = Flow.ERROR
-            return False
-        return True
-    elif tile == b"00111":  # follow_goal_down,
-        if flow != Flow.DOWN:
-            # new_flow = Flow.ERROR
-            return False
-        return True
-    elif tile == b"01000" or tile == b"01111":  # follow_right_left,
-        if flow == Flow.LEFT:
-            loc = (loc[0], loc[1] + 1)
-        elif flow == Flow.RIGHT:
-            loc, flow = (loc[0], loc[1] - 1), Flow.RIGHT
-        else:
-            return False
-    elif tile == b"01001" or tile == b"10000":  # follow_top_down,
-        if flow == Flow.TOP:
-            loc = (loc[0] + 1, loc[1])
-        elif flow == Flow.DOWN:
-            loc = (loc[0] - 1, loc[1])
-        else:
-            return False
-    elif tile == b"01010" or tile == b"10001":  # follow_right_top,
-        if flow == Flow.RIGHT:
-            loc, flow = ((loc[0] - 1, loc[1]), Flow.DOWN)
-        elif flow == Flow.TOP:
-            loc, flow = ((loc[0], loc[1] + 1), Flow.LEFT)
-        else:
-            return False
-    elif tile == b"01011" or tile == b"10010":  # follow_right_down,
-        if flow == Flow.RIGHT:
-            loc, flow = ((loc[0] + 1, loc[1]), Flow.TOP)
-        elif flow == Flow.DOWN:
-            loc, flow = ((loc[0], loc[1] + 1), Flow.LEFT)
-        else:
-            return False
-    elif tile == b"01100" or tile == b"10011":  # follow_left_top,
-        if flow == Flow.LEFT:
-            loc, flow = ((loc[0] - 1, loc[1]), Flow.DOWN)
-        elif flow == Flow.TOP:
-            loc, flow = ((loc[0], loc[1] - 1), Flow.RIGHT)
-        else:
-            return False
-    elif tile == b"01101" or tile == b"10100":  # follow_left_down,
-        if flow == Flow.LEFT:
-            loc, flow = ((loc[0] + 1, loc[1]), Flow.TOP)
-        elif flow == Flow.DOWN:
-            loc, flow = ((loc[0], loc[1] - 1), Flow.RIGHT)
-        else:
-            return False
-    elif tile == b"01110" or tile == b"10101" or tile == b"10110":  # follow_no_passage,
-        return False
-    # elif tile == b"01111": follow_right_left,
-    # elif tile == b"10000": follow_top_down,
-    # elif tile == b"10001": follow_right_top,
-    # elif tile == b"10010": follow_right_down,
-    # elif tile == b"10011": follow_left_top,
-    # elif tile == b"10100": follow_left_down,
-    # elif tile == b"10101": follow_no_passage,
-    # elif tile == b"10110": follow_no_passage,
-
-    # validate new_loc
-    if loc[0] < 0 or loc[0] >= self.N or loc[1] < 0 or loc[1] >= self.N:
-        return False
-    # get new tile
-    # tile = state[loc]
-    # continue
-    return True
-
-
-def follow_initial_left(
-    loc: Tuple[int, int], flow: Flow
-) -> Tuple[Tuple[int, int], Flow]:
-    return ((loc[0], loc[1] - 1), Flow.RIGHT)
-
-
-def follow_initial_right(
-    loc: Tuple[int, int], flow: Flow
-) -> Tuple[Tuple[int, int], Flow]:
-    return ((loc[0], loc[1] + 1), Flow.LEFT)
-
-
-def follow_initial_top(
-    loc: Tuple[int, int], flow: Flow
-) -> Tuple[Tuple[int, int], Flow]:
-    return ((loc[0] - 1, loc[1]), Flow.DOWN)
-
-
-def follow_initial_down(
-    loc: Tuple[int, int], flow: Flow
-) -> Tuple[Tuple[int, int], Flow]:
-    return ((loc[0] + 1, loc[1]), Flow.TOP)
-
-
-def follow_goal_left(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.LEFT:
-        return (loc, flow)
-    return (loc, Flow.ERROR)
-
-
-def follow_goal_right(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.RIGHT:
-        return (loc, flow)
-    return (loc, Flow.ERROR)
-
-
-def follow_goal_top(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.TOP:
-        return (loc, flow)
-    return (loc, Flow.ERROR)
-
-
-def follow_goal_down(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.DOWN:
-        return (loc, flow)
-    return (loc, Flow.ERROR)
-
-
-def follow_right_left(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.LEFT:
-        return ((loc[0], loc[1] + 1), Flow.LEFT)
-    elif flow == Flow.RIGHT:
-        return ((loc[0], loc[1] - 1), Flow.RIGHT)
-    else:
-        return (loc, Flow.ERROR)
-
-
-def follow_top_down(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.TOP:
-        return ((loc[0] + 1, loc[1]), Flow.TOP)
-    elif flow == Flow.DOWN:
-        return ((loc[0] - 1, loc[1]), Flow.DOWN)
-    else:
-        return (loc, Flow.ERROR)
-
-
-def follow_right_top(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.RIGHT:
-        return ((loc[0] - 1, loc[1]), Flow.DOWN)
-    elif flow == Flow.TOP:
-        return ((loc[0], loc[1] + 1), Flow.LEFT)
-    else:
-        return (loc, Flow.ERROR)
-
-
-def follow_right_down(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.RIGHT:
-        return ((loc[0] + 1, loc[1]), Flow.TOP)
-    elif flow == Flow.DOWN:
-        return ((loc[0], loc[1] + 1), Flow.LEFT)
-    else:
-        return (loc, Flow.ERROR)
-
-
-def follow_left_top(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.LEFT:
-        return ((loc[0] - 1, loc[1]), Flow.DOWN)
-    elif flow == Flow.TOP:
-        return ((loc[0], loc[1] - 1), Flow.RIGHT)
-    else:
-        return (loc, Flow.ERROR)
-
-
-def follow_left_down(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    if flow == Flow.LEFT:
-        return ((loc[0] + 1, loc[1]), Flow.TOP)
-    elif flow == Flow.DOWN:
-        return ((loc[0], loc[1] - 1), Flow.RIGHT)
-    else:
-        return (loc, Flow.ERROR)
-
-
-def follow_no_passage(loc: Tuple[int, int], flow: Flow) -> Tuple[Tuple[int, int], Flow]:
-    return (loc, Flow.ERROR)
-
-
-follow_func = {
-    b"00000": follow_initial_left,
-    b"00001": follow_initial_right,
-    b"00010": follow_initial_top,
-    b"00011": follow_initial_down,
-    b"00100": follow_goal_left,
-    b"00101": follow_goal_right,
-    b"00110": follow_goal_top,
-    b"00111": follow_goal_down,
-    b"01000": follow_right_left,
-    b"01001": follow_top_down,
-    b"01010": follow_right_top,
-    b"01011": follow_right_down,
-    b"01100": follow_left_top,
-    b"01101": follow_left_down,
-    b"01110": follow_no_passage,
-    b"01111": follow_right_left,
-    b"10000": follow_top_down,
-    b"10001": follow_right_top,
-    b"10010": follow_right_down,
-    b"10011": follow_left_top,
-    b"10100": follow_left_down,
-    b"10101": follow_no_passage,
-    b"10110": follow_no_passage,
 }
 
 initial_tile_types = {
@@ -389,9 +82,12 @@ Actions = Tuple[Action, ...]
 class RTBProblem(search.Problem):
     def __init__(self):
         """
-        Method that instantiate your class. You can change the content of this. self.initial is where
-        the initial state of the puzzle should be saved.
-        init initial state with empty tupple
+        State is a 1d binary object with N*N*TILE_ENCONDING lenght.
+        we have 23 diferente types of tiles, so we need at least 5 bits to encode all of each tile types.
+        We always use a location object (y, x), where (0,0) is the top 
+        left corner of the grid, and (N-1, N-1) is the lower right corner.
+        We use integer division and modulo aritmetics to translate y,x coordenates 
+        to 1 dimension index in the state representation.
         """
         self.initial: State = b""
         self.algorithm = None
@@ -416,7 +112,6 @@ class RTBProblem(search.Problem):
                 # all other lines are, in sequence, corresponding to each board line configuration.
                 row = [map_tile_to_bytes[tile] for tile in line.split()]
                 board = b"".join([board, *row])
-                # board += row
 
         self.initial = board
         self.init_tile_loc = self._find_init(self.initial)
@@ -425,8 +120,7 @@ class RTBProblem(search.Problem):
         return int(self.N * loc[0] + loc[1])
 
     def _find_init(self, state) -> Location:
-        """Locate the initial tile on the state, and set initial flow."""
-
+        """Locate the initial tile on the state."""
         for n in range(self.N * self.N):
             if state[n * 5 : n * 5 + 5] in initial_tile_types:
                 return (n // self.N, n % self.N)
@@ -454,7 +148,7 @@ class RTBProblem(search.Problem):
             state_list[loc_neighbor_index * 5 : loc_neighbor_index * 5 + 5],
             state_list[loc_index * 5 : loc_index * 5 + 5],
         )
-
+        # transform list back to binary representation.
         return bytes(state_list)
 
     def actions(self, state: State) -> Actions:
@@ -466,16 +160,8 @@ class RTBProblem(search.Problem):
 
         def _find_emptys() -> List[Location]:
             """
-            return the locations of 'empty-cell' tiles in state
-
-            >>> problem.initial
-            ('right-down', 'right-left', 'right-left', 'initial-left', 'right-top', 'right-left',
-             'right-left', 'left-down', 'goal-right', 'right-left', 'right-left', 'left-top',
-             'empty-cell', 'empty-cell', 'empty-cell', 'empty-cell')
-            >>> [idx for idx, tile in enumerate(problem.initial) if tile == "empty-cell"]
-            [12, 13, 14, 15]
+            return the locations of 'empty-cell' (b"10110") tiles in state
             """
-
             locs = []
 
             for n in range(self.N * self.N):
@@ -536,14 +222,13 @@ class RTBProblem(search.Problem):
         #    self.N = int((len(state) / 5) ** 0.5)
 
         # initial position, flow will not be defined, can be any value
-        # loc, flow = self._find_init(state), Flow.DOWN
         loc, flow = self.init_tile_loc, Flow.DOWN
-        # get tile type
+        # set first tile type, one of initial types
         tile = state[
             (loc[0] * self.N + loc[1]) * 5 : (loc[0] * self.N + loc[1]) * 5 + 5
         ]
 
-        first = True    # first passage in init?
+        first = True    # first passage in initial type tile?
         while True:
             if (
                 tile == b"01110" or tile == b"10101" or tile == b"10110"
