@@ -1,8 +1,6 @@
 from typing import Tuple, List
 from enum import Enum, auto
 
-from itertools import islice
-
 import search
 
 
@@ -315,6 +313,7 @@ class RTBProblem(search.Problem):
         self.initial: State = b""
         self.algorithm = None
         self.N = 0
+        self.init_tile_loc = (0, 0)
 
     def load(self, fh):
         """Loads a RTB puzzle from the file object fh. You may initialize self.initial here."""
@@ -337,6 +336,7 @@ class RTBProblem(search.Problem):
                 # board += row
 
         self.initial = board
+        self.init_tile_loc = self._find_init(self.initial)
 
     def _loc_to_index(self, loc: Location) -> int:
         return int(self.N * loc[0] + loc[1])
@@ -398,17 +398,25 @@ class RTBProblem(search.Problem):
             return the locations of 'empty-cell' tiles in state
 
             >>> problem.initial
-            ('right-down', 'right-left', 'right-left', 'initial-left', 'right-top', 'right-left', 
-             'right-left', 'left-down', 'goal-right', 'right-left', 'right-left', 'left-top', 
+            ('right-down', 'right-left', 'right-left', 'initial-left', 'right-top', 'right-left',
+             'right-left', 'left-down', 'goal-right', 'right-left', 'right-left', 'left-top',
              'empty-cell', 'empty-cell', 'empty-cell', 'empty-cell')
             >>> [idx for idx, tile in enumerate(problem.initial) if tile == "empty-cell"]
             [12, 13, 14, 15]
             """
-            locs = [
-                (n // self.N, n % self.N)
-                for n in range(self.N * self.N)
-                if state[n * 5 : n * 5 + 5] == b"10110"
-            ]
+
+            locs = []
+
+            for n in range(self.N * self.N):
+                t = state[n * 5 : n * 5 + 5]
+                if t == b"10110":
+                    locs.append((n // self.N, n % self.N))
+
+            # locs = [
+            #     (n // self.N, n % self.N)
+            #     for n in range(self.N * self.N)
+            #     if state[n * 5 : n * 5 + 5] == b"10110"
+            # ]
             return locs
 
         def _valid_destination(candidate_loc):
@@ -460,7 +468,8 @@ class RTBProblem(search.Problem):
             self.N = int((len(state) / 5) ** 0.5)
 
         # initial position, flow will not be defined, can be any value
-        current_loc, flow = self._find_init(state), Flow.DOWN
+        # current_loc, flow = self._find_init(state), Flow.DOWN
+        current_loc, flow = self.init_tile_loc, Flow.DOWN
 
         # print(current_loc, state)
         while True:
@@ -475,7 +484,14 @@ class RTBProblem(search.Problem):
             # print(flow, current_loc, state[current_loc[0] * self.N + current_loc[1]])
 
             # tile is not compatible: broke the flow or flows outside
-            if flow == Flow.ERROR or not self._in_bounds(current_loc):
+            # if flow == Flow.ERROR or not self._in_bounds(current_loc):
+            if (
+                flow == Flow.ERROR
+                or current_loc[0] < 0
+                or current_loc[0] >= self.N
+                or current_loc[1] < 0
+                or current_loc[1] >= self.N
+            ):
                 return False
 
             # reached another initial tile, not solvable
@@ -515,9 +531,8 @@ class RTBProblem(search.Problem):
 
     def setAlgorithm(self):
         """Sets the uninformed search algorithm chosen."""
-        # self.algorithm = search.iterative_deepening_search        # example : self.algorithm = search.breadth_first_tree_search
+        # self.algorithm = search.iterative_deepening_search
         self.algorithm = search.breadth_first_graph_search
-        # self.algorithm = search.depth_first_graph_search
         # substitute by the function in search.py that
         # implements the chosen algorithm.
         # You can only use the algorithms defined in search.py
