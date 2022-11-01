@@ -126,8 +126,10 @@ class RTBProblem(search.Problem):
         self.init_tile_loc = self._find_init(self.initial)
         self.goal_tile_loc = self._find_goal(self.initial)
         # useful for heuristic function
-        self.init_goal_dist = abs(self.goal_tile_loc[1] - self.init_tile_loc[1]) + abs(
-            self.goal_tile_loc[0] - self.init_tile_loc[0]
+        self.init_goal_dist = (
+            abs(self.goal_tile_loc[1] - self.init_tile_loc[1])
+            + abs(self.goal_tile_loc[0] - self.init_tile_loc[0])
+            - 1
         )
 
     def _loc_to_index(self, loc: Location) -> int:
@@ -611,10 +613,47 @@ class RTBProblem(search.Problem):
             ]
 
     def h(self, node):
-        """This heuristic works like this:
-        ...
-        It is consistent/not consistent because...
-        It is admissible/not admissible because...
+        """
+        This heuristic works like this:
+            b1 = last point before break for flow path from initial;
+            b2 = last point before break for flow path from goal;
+            min_distance = calculate min distance (Manhattan) between 4 points
+                (initial_tile or b1 to (->) b2 or goal_tile).
+
+        Let breakpoint1 (b1 or initial_tile) and breakpoint2 (b2 or goal_tile)
+        be the points that are closer. min_distance is the distance between 
+        breakpoint1 and breakpoint2.
+
+        Fist, we started by using this min_distance as the heuristic value (we
+        got 19.8 mark in moodle).
+
+        But it can happen that within the unsolved subboard, between the too 
+        most close points, only a fraction of tiles needs to be changed,
+        and for a min_distance of at least 3, the best case is when we need to
+        change only 2 pieces (the one next to break point 1, and the one next 
+        breakpoint2).
+
+        To never overestimate the cost to go we establish this upper bound 
+        (2 changes if min distance is bigger than 2).
+
+        I.e. the cost to solve sub problem of the board from (breakpoint1 to 
+        breakpoint2) is upper bounded by 2 changes (optimistically), or 1 if 
+        these points are closer than 2 pieces apart.
+
+        With this approach we didn't improve grading (still got 19.8). 
+        Possibly due to not finding the optimal solution in the least number 
+        of steps.
+
+        Since it never overestimates the cost to go, this heuristic is 
+        admissible, therefore it leads to find the optimal solution.
+        On the other hand it is not consistent, because given a Node, there is 
+        no guaranty the cost to go is non-increasing.
+        It can happen that a action (with a small heuristic value) causes a 
+        state where the true cost is much greater that what we expect, since 
+        we are very optimistic in the heuristic.
+
+        (delete)It is consistent/not consistent because...
+        (delete)It is admissible/not admissible because...
         """
         # node.state tem o estado
         loc_flow_init = self._follow_path_forward(node.state)
@@ -622,14 +661,20 @@ class RTBProblem(search.Problem):
         # loc_flow_end = calc_end_flow_from_goal
 
         # Manhattan distance = abs(x2-x1) + abs(y2-y1)
-        d1 = abs(loc_flow_goal[1] - loc_flow_init[1]) + abs(
-            loc_flow_goal[0] - loc_flow_init[0]
+        d1 = (
+            abs(loc_flow_goal[1] - loc_flow_init[1])
+            + abs(loc_flow_goal[0] - loc_flow_init[0])
+            - 1
         )
-        d2 = abs(loc_flow_goal[1] - self.init_tile_loc[1]) + abs(
-            loc_flow_goal[0] - self.init_tile_loc[0]
+        d2 = (
+            abs(loc_flow_goal[1] - self.init_tile_loc[1])
+            + abs(loc_flow_goal[0] - self.init_tile_loc[0])
+            - 1
         )
-        d3 = abs(self.goal_tile_loc[1] - loc_flow_init[1]) + abs(
-            self.goal_tile_loc[0] - loc_flow_init[0]
+        d3 = (
+            abs(self.goal_tile_loc[1] - loc_flow_init[1])
+            + abs(self.goal_tile_loc[0] - loc_flow_init[0])
+            - 1
         )
-        return min(d1, d2, d3, self.init_goal_dist)
+        return min(d1, d2, d3, self.init_goal_dist, 2)
         # min_dist(init, flow_init, flow_goal, goal)
