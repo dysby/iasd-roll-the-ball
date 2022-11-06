@@ -630,7 +630,7 @@ class RTBProblem(search.Problem):
         But it can happen that within the unsolved subboard, between the too 
         most close points, only a fraction of tiles needs to be changed,
         and for a min_distance of at least 3, the best case is when we need to
-        change only 2 pieces (the one next to break point 1, and the one next 
+        change only 2 pieces (the one next to breakpoint 1, and the one next 
         breakpoint2).
 
         To never overestimate the cost to go we establish this upper bound 
@@ -651,9 +651,6 @@ class RTBProblem(search.Problem):
         It can happen that a action (with a small heuristic value) causes a 
         state where the true cost is much greater that what we expect, since 
         we are very optimistic in the heuristic.
-
-        (delete)It is consistent/not consistent because...
-        (delete)It is admissible/not admissible because...
         """
         # node.state tem o estado
         loc_flow_init = self._follow_path_forward(node.state)
