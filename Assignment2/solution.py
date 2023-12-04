@@ -327,8 +327,8 @@ class RTBProblem(search.Problem):
 
     def setAlgorithm(self):
         """Sets the uninformed search algorithm chosen."""
-        self.algorithm = search.iterative_deepening_search
-        # self.algorithm = search.breadth_first_graph_search
+        # self.algorithm = search.iterative_deepening_search
+        self.algorithm = search.breadth_first_graph_search
         # substitute by the function in search.py that
         # implements the chosen algorithm.
         # You can only use the algorithms defined in search.py
